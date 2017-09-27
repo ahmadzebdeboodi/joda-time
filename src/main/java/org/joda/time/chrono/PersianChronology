@@ -2,12 +2,9 @@ package org.joda.time.chrono;
 
 
 import org.joda.time.Chronology;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -89,10 +86,13 @@ public class PersianChronology extends BasicChronology {
     int getMonthOfYear(long millis, int year) {
         long startMillis = getYearMillis(year);
         int dayOfYear = (int) ((millis - startMillis) / DateTimeConstants.MILLIS_PER_DAY);
-        if (dayOfYear < 187)
+        if (dayOfYear >= 0 && dayOfYear < 187)
             return (dayOfYear - 1) / 31 + 1;
-        else
+        else if (dayOfYear > 186 && dayOfYear < 367)
             return (dayOfYear - 187) / 30 + 7;
+        else
+            throw new RuntimeException("Invalid year");
+
     }
 
     @Override
@@ -147,9 +147,9 @@ public class PersianChronology extends BasicChronology {
     @Override
     long getTotalMillisByYearMonth(int year, int month) {
         if (month > 0 && month < 8)
-            return (month - 1) * 31 * DateTimeConstants.MILLIS_PER_DAY;
+            return (month - 1) * 31 * (long) DateTimeConstants.MILLIS_PER_DAY;
         else if (month > 7 && month < 13)
-            return ((month - 1) * 31 - month + 7) * DateTimeConstants.MILLIS_PER_DAY;
+            return ((month - 1) * 31 - month + 7) * (long) DateTimeConstants.MILLIS_PER_DAY;
         else
             throw new RuntimeException("invalid month value");
     }
@@ -157,7 +157,7 @@ public class PersianChronology extends BasicChronology {
     @Override
     long calculateFirstDayOfYearMillis(int year) {
         long millis = 1426896000000L; //millis for 1394/1/1 00:00 UTC
-        int days = 365 * (year - 1394) + getLeapCount(1394, year);
+        long days = 365 * (year - 1394) + getLeapCount(1394, year);
         return millis + days * DateTimeConstants.MILLIS_PER_DAY;
     }
 
